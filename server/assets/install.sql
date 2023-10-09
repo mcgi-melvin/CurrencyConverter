@@ -1,0 +1,5 @@
+CREATE TABLE IF NOT EXISTS symbols (
+    id VARCHAR(45) DEFAULT (UUID()),
+    sysmbol VARCHAR(45) NOT NULL,
+    date_created TIMESTAMP DEFAULT (NOW())
+)
