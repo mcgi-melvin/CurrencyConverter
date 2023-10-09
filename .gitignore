@@ -1,3 +1,5 @@
+.idea
+
 /server/vendor
 /server/composer.lock
 /server/.env
