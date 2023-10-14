@@ -3,3 +3,5 @@
 /server/vendor
 /server/composer.lock
 /server/.env
+
+*.zip

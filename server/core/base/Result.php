@@ -1,6 +1,6 @@
 <?php
 
-namespace core\base;
+namespace CurrencyConverterServer\core\base;
 
 class Result
 {

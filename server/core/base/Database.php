@@ -1,31 +1,30 @@
 <?php
 
-namespace core\base;
+namespace CurrencyConverterServer\core\base;
 
-use core\Application;
+use CurrencyConverterServer\core\Application;
 
 class Database
 {
-    private string $host = "";
-
-    private string $user = "";
-
-    private string $pass = "";
-
-    private string $db = "";
-
     protected \PDO $connection;
 
     public function __construct()
     {
+        Application::$app->dotenv->required(['DB_HOST', 'DB_USER', 'DB_PASS', 'DB_NAME'])->notEmpty();
+
         try {
-            $this->connection = new \PDO("mysql:host={$this->host};dbname={$this->db}", $this->user, $this->pass, [
-                \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
-                \PDO::MYSQL_ATTR_MULTI_STATEMENTS => true
+            $this->connection = new \PDO("mysql:host={$_ENV['DB_HOST']};dbname={$_ENV['DB_NAME']}", $_ENV['DB_USER'], $_ENV['DB_PASS'], [
+                \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION
             ]);
+            return true;
         } catch (\Exception $e) {
-            Application::$app->result->
+            Application::$app->result->setMessage( $e->getMessage() );
             return false;
         }
+    }
+
+    public function connection(): \PDO
+    {
+        return $this->connection;
     }
 }
