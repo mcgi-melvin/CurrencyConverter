@@ -22,6 +22,8 @@ class Application
 
     public \stdClass $currency_codes;
 
+    public array $codes = [];
+
     public function __construct()
     {
         self::$app = $this;
@@ -32,50 +34,63 @@ class Application
         $this->result = new Result();
 
         $this->currency_codes = json_decode( file_get_contents( "./assets/json/currency-codes.json" ) );
+
+        $this->codes = array_keys( json_decode( file_get_contents("./assets/json/currency-codes.json"), true ) );
     }
 
     public function init()
     {
-        $codes = array_keys( json_decode( file_get_contents("./assets/json/currency-codes.json"), true ) );
-        $rcodes = array_reverse( $codes );
+        $rate_db = new Rate();
 
-        /*
-        $html = file_get_contents( "https://www.google.com/finance/quote/USD-PHP?hl=en" );
+        $last_uploaded_rate = $rate_db->findLast();
 
-        preg_match_all('%(<div class="YMlKec fxKbKc">.*?</div>)%i', $html,$posts,PREG_SET_ORDER);
-        */
+        if( $last_uploaded_rate ) {
+            $last_code = array_search( $last_uploaded_rate->base_currency, $this->codes );
 
-        foreach ( $codes as $code1 ) {
-            foreach ( $rcodes as $code2 ) {
+            $index = $last_code + 1;
 
-                $url = "https://www.google.com/finance/quote/{$code1}-{$code2}?hl=en";
+            if( $index === count( $this->codes ) )
+                $index = 0;
 
-                /*
-                $dom = HtmlDomParser::file_get_html("https://www.google.com/finance/quote/{$code1}-{$code2}?hl=en");
+            $code1 = $this->codes[$index];
 
-                $element = $dom->findOne('.fxKbKc');
+            $this->save_rates( $code1 );
+        } else {
+            $this->save_rates( $this->codes[0] );
+        }
+    }
 
-                if( !$element->innertext ) continue;
-                */
+    private function save_rates( $code1 )
+    {
+        foreach ( $this->codes as $code2 ) {
+            if( $code1 === $code2 ) continue;
+            $url = "https://www.google.com/finance/quote/{$code1}-{$code2}?hl=en";
 
-                $html = file_get_contents( $url );
+            /*
+            $dom = HtmlDomParser::file_get_html("https://www.google.com/finance/quote/{$code1}-{$code2}?hl=en");
 
-                preg_match_all('%(<div class="YMlKec fxKbKc">.*?</div>)%i', $html,$posts,PREG_SET_ORDER);
+            $element = $dom->findOne('.fxKbKc');
 
-                $value = 0;
+            if( !$element->innertext ) continue;
+            */
 
-                if( $posts && $posts[0] ) $value = (float) strip_tags( $posts[0][0] );
+            $html = file_get_contents( $url );
 
-                echo $code1 . "-" . $code2 . "=" . $value . "<br />";
+            preg_match_all('%(<div class="YMlKec fxKbKc">.*?</div>)%i', $html,$posts,PREG_SET_ORDER);
 
-                $rate = new Rate();
+            $value = 0;
 
-                $rate->base_currency = $code1;
-                $rate->converting_currency = $code2;
-                $rate->value = (float) $value;
+            if( $posts && $posts[0] ) $value = (float) strip_tags( $posts[0][0] );
 
-                $rate->save();
-            }
+            echo $code1 . "-" . $code2 . "=" . $value . "<br />";
+
+            $rate = new Rate();
+
+            $rate->base_currency = $code1;
+            $rate->converting_currency = $code2;
+            $rate->value = (float) $value;
+
+            $rate->save();
         }
     }
 

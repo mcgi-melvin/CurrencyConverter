@@ -119,6 +119,15 @@ trait DatabaseTrait
         return $statement->fetchAll(\PDO::FETCH_OBJ);
     }
 
+    public function findLast()
+    {
+        $statement = $this->connection->prepare("SELECT * FROM {$this->table_name()} ORDER BY date_created DESC LIMIT 1");
+
+        $statement->execute();
+
+        return $statement->fetch( \PDO::FETCH_OBJ );
+    }
+
     public function delete(): void
     {
         $table_name = static::table_name();
