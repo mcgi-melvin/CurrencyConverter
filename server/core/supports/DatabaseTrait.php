@@ -12,6 +12,13 @@ trait DatabaseTrait
 
     abstract function attributes(): array;
 
+    public function load_data( array $data = [] )
+    {
+        foreach ( $data as $key => $val )
+            if( property_exists( $this, $key ) )
+                $this->{$key} = $val;
+    }
+
     public function save(): bool
     {
         $table_name = $this->table_name();
@@ -104,7 +111,7 @@ trait DatabaseTrait
         $attributes = array_keys( $where );
         $sql = implode( "AND ", array_map( fn($attr) => "$attr = :$attr ", $attributes ) );
 
-        $statement = $this->connection->prepare("SELECT * FROM {$this->table_name()} WHERE $sql");
+        $statement = $this->connection->prepare("SELECT * FROM {$this->table_name()} WHERE $sql ORDER BY date_created DESC");
 
         foreach( $where as $key => $item ) {
             if( is_numeric( $item ) ) {

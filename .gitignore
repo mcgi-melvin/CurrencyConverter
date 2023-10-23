@@ -3,5 +3,9 @@
 /server/vendor
 /server/composer.lock
 /server/.env
+/server/assets/json/currency-codes-backup.json
+
+/currency-converter/.vscode
 
 *.zip
+*.sql
